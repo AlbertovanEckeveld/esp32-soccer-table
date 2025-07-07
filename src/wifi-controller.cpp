@@ -36,14 +36,12 @@ void connectToWiFi() {
 void updateWiFi() {
   unsigned long currentTime = millis();
   
-  // Only check WiFi status at intervals to avoid overwhelming the system
   if (currentTime - lastWiFiCheck < WIFI_CHECK_INTERVAL) {
     return;
   }
   lastWiFiCheck = currentTime;
   
   if (currentStatus == WIFI_CONNECTING) {
-    // Print dots every 500ms while connecting
     if (currentTime - lastStatusPrint >= 500) {
       Serial.print(".");
       lastStatusPrint = currentTime;
