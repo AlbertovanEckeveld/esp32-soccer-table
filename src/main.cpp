@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "wifi-controller.h"
 #include "led-controller.h"
 #include "ir-controller.h"
 
@@ -9,15 +8,9 @@ void setup() {
   
   Serial.println("ESP32 Soccer Table - WiFi Setup");
   Serial.println("================================");
-  
-  // Initialize WiFi
-  initWiFi();
-  connectToWiFi();
-  
-  // Initialize LED strip
+
   initLEDs();
   
-  // Initialize IR sensors for goal detection
   initIRSensors();
   
   // Start with full white effect
@@ -28,21 +21,11 @@ void setup() {
 }
 
 void loop() {
-  // Non-blocking WiFi management
-  updateWiFi();
-  
-  // Non-blocking LED animations
+
   updateLEDs();
   
   // Check for goals (IR sensors)
   updateIRSensors();
-  
-  // Check WiFi status every 10 seconds
-  static unsigned long lastWiFiCheck = 0;
-  if (millis() - lastWiFiCheck > 10000) {
-    checkWiFiStatus();
-    lastWiFiCheck = millis();
-  }
   
   // Only cycle through demo effects when not celebrating a goal
   if (!isCelebrationActive()) {

@@ -50,12 +50,10 @@ GND          → LED Strip GND + IR Sensors GND + ESP32 GND
 esp32-soccer-table/
 ├── platformio.ini          # PlatformIO configuration
 ├── include/
-│   ├── wifi-controller.h   # WiFi management declarations
 │   ├── led-controller.h    # LED strip control declarations
 │   └── ir-controller.h     # IR sensor declarations
 ├── src/
 │   ├── main.cpp            # Main application code
-│   ├── wifi-controller.cpp # WiFi implementation
 │   ├── led-controller.cpp  # LED strip implementation
 │   └── ir-controller.cpp   # IR sensor implementation
 └── README.md               # This file
@@ -67,14 +65,7 @@ esp32-soccer-table/
 - Install [PlatformIO IDE](https://platformio.org/platformio-ide) or use PlatformIO extension in VS Code
 - Clone or download this repository
 
-### 2. WiFi Configuration
-Edit `src/wifi-controller.cpp` and update your WiFi credentials:
-```cpp
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
-```
-
-### 3. Hardware Configuration
+### 2. Hardware Configuration
 If using different pins, update the pin definitions in the header files:
 ```cpp
 // In include/led-controller.h
@@ -85,7 +76,7 @@ If using different pins, update the pin definitions in the header files:
 #define IR_SENSOR_GOAL_2_PIN 19
 ```
 
-### 4. Upload Code
+### 3. Upload Code
 1. Connect your ESP32 to your computer
 2. Open the project in PlatformIO
 3. Build and upload: `pio run --target upload`
@@ -95,27 +86,21 @@ If using different pins, update the pin definitions in the header files:
 
 ### Normal Operation
 1. Power on the system
-2. Wait for WiFi connection (check Serial Monitor)
-3. LED strip will show white light initially
-4. Demo effects cycle every 10 seconds when not playing
+2. LED strip will show white light initially
+3. Demo effects cycle every 10 seconds when not playing
 
 ### Playing Soccer
 1. Start playing - the system is always ready
 2. When a goal is scored, the IR sensor detects it immediately
-3. LED strip shows a 5-second celebration in team colors:
+3. LED strip shows a 3-second celebration in team colors:
    - **Team A Goal**: Red wave celebration
    - **Team B Goal**: Blue wave celebration
-4. Score is automatically tracked and displayed in Serial Monitor
-5. After celebration, demo effects resume
+4. After celebration, demo effects resume
 
 ### Serial Monitor Output
 ```
 ESP32 Soccer Table - WiFi Setup
 ================================
-Initializing WiFi...
-Connecting to WiFi...
-WiFi connected successfully!
-IP address: 192.168.1.100
 LED strip initialized with 300 LEDs
 IR sensors initialized:
 - Goal 1 (Team A) sensor on pin 18
@@ -148,8 +133,8 @@ Adjust timing in the header files:
 ### Team Colors
 Change team colors in `led-controller.h`:
 ```cpp
-#define TEAM_A_COLOR CRGB::Red       // Team A color
-#define TEAM_B_COLOR CRGB::Blue      // Team B color
+#define TEAM_A_COLOR CRGB::Yellow       // Team A color
+#define TEAM_B_COLOR CRGB::Orange       // Team B color
 ```
 
 ## 🛠️ Troubleshooting
@@ -164,10 +149,6 @@ Change team colors in `led-controller.h`:
 - **False triggers**: Increase `IR_DEBOUNCE_TIME` or adjust sensor sensitivity
 - **Sensors always triggered**: Check pull-up resistors and sensor polarity
 
-### WiFi Issues
-- **Won't connect**: Verify SSID and password in wifi-controller.cpp
-- **Slow connection**: Normal, system continues running during connection
-
 ### Serial Monitor
 - Use 9600 baud rate
 - Check USB cable and driver installation
@@ -178,25 +159,12 @@ Change team colors in `led-controller.h`:
 ### Add More Effects
 Create custom LED effects by adding new cases to the `updateLEDs()` function in `led-controller.cpp`.
 
-### Web Interface
-The WiFi functionality enables adding a web server for:
-- Remote score monitoring
-- LED effect control
-- Game statistics
-
-### MQTT Integration
-Add MQTT publishing for:
-- Real-time score updates
-- Goal events
-- System status
-
 ## 📊 Power Consumption
 
-- **ESP32**: ~240mA (WiFi active)
-- **LED Strip**: Up to 18A at full white (300 LEDs × 60mA)
+- **LED Strip**: Up to 8 at full white (300 LEDs)
 - **IR Sensors**: ~20mA each
 
-**Recommended**: 5V 20A power supply for full brightness operation.
+**Recommended**: 5V 10A power supply for full brightness operation.
 
 ## 🤝 Contributing
 
@@ -222,5 +190,4 @@ This project is open source. Feel free to use, modify, and distribute.
 ---
 
 **Made with ⚽ for soccer/foosball enthusiasts!**
-
 *Enjoy your smart soccer table and may the best team win!* 🏆

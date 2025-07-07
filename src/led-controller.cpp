@@ -1,10 +1,9 @@
 #include "led-controller.h"
 
-// Define constants that might be missing
-#define WAVE_SPEED 50        // Speed of wave animation (lower = faster)
-#define WAVE_WIDTH 20        // Width of the wave in LEDs
+#define WAVE_SPEED 50        
+#define WAVE_WIDTH 20     
 
-// Global variables
+
 CRGB leds[NUM_LEDS];
 LEDEffect currentEffect = LED_OFF;
 LEDEffect previousEffect = LED_FULL_WHITE; // Store previous effect for returning after celebration
