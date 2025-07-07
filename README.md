@@ -209,17 +209,3 @@ Feel free to contribute improvements:
 ## 📄 License
 
 This project is open source. Feel free to use, modify, and distribute.
-
-## 🎯 Future Enhancements
-
-- [ ] Web dashboard for remote monitoring
-- [ ] Sound effects on goals
-- [ ] Tournament mode with multiple games
-- [ ] Mobile app integration
-- [ ] Statistics tracking and analytics
-- [ ] Multiple game modes
-
----
-
-**Made with ⚽ for soccer/foosball enthusiasts!**
-*Enjoy your smart soccer table and may the best team win!* 🏆
