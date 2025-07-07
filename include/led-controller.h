@@ -26,8 +26,8 @@
 #define CELEBRATION_WAVE_SPEED 30    // Faster wave for celebration
 
 // Team colors
-#define TEAM_A_COLOR CRGB::Red       // Team A = Red
-#define TEAM_B_COLOR CRGB::Blue      // Team B = Blue
+#define TEAM_A_COLOR CRGB::Yellow       // Team A = Red
+#define TEAM_B_COLOR CRGB::Orange      // Team B = Blue
 
 enum LEDEffect {
   LED_OFF,
@@ -35,8 +35,8 @@ enum LEDEffect {
   LED_COLOR_WAVE,
   LED_RAINBOW_WAVE,
   LED_BREATHING,
-  LED_GOAL_CELEBRATION_A,            // Goal celebration for Team A
-  LED_GOAL_CELEBRATION_B             // Goal celebration for Team B
+  LED_GOAL_CELEBRATION_A,            
+  LED_GOAL_CELEBRATION_B             
 };
 
 void initLEDs();
@@ -45,7 +45,6 @@ void setLEDEffect(LEDEffect effect);
 void setWaveColor(CRGB color);
 void setBrightness(uint8_t brightness);
 
-// Goal celebration functions
 void triggerGoalCelebration(int team); // team: 1 = Team A, 2 = Team B
 void showGoalCelebration();
 bool isCelebrationActive();
