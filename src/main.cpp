@@ -1,18 +1,26 @@
 #include <Arduino.h>
-
-// put function declarations here:
-int myFunction(int, int);
+#include "wifi-controller.h"
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(9600);
+  delay(1000);
+  
+  Serial.println("ESP32 Soccer Table - WiFi Setup");
+  Serial.println("================================");
+  
+  initWiFi();
+  connectToWiFi();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  updateWiFi();
+  
+  static unsigned long lastWiFiCheck = 0;
+  if (millis() - lastWiFiCheck > 10000) {
+    checkWiFiStatus();
+    lastWiFiCheck = millis();
+  }
+  
+  // Your main application code goes here
+  // No delay needed - the loop runs freely
 }
