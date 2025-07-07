@@ -5,23 +5,13 @@
 void setup() {
   Serial.begin(9600);
   delay(1000);
-  
-  Serial.println("ESP32 Soccer Table - WiFi Setup");
-  Serial.println("================================");
 
   initLEDs();
-  
   initIRSensors();
-  
-  // Start with LEDs off (will turn white automatically when game becomes active)
   setLEDEffect(LED_OFF);
-  
-  Serial.println("⚽ Soccer table system initialized successfully! ⚽");
-  Serial.println("Ready for play! Score goals to see LED celebrations!");
 }
 
 void loop() {
-  // Non-blocking LED animations
   updateLEDs();
   
   // Check for goals (IR sensors) - only during active games

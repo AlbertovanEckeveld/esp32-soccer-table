@@ -44,7 +44,7 @@ bool isGameActive();
 GameState getGameState();
 void onGameWon(Team winningTeam);
 void celebrateGameWin(Team winningTeam);
-void onGameWinCelebrationEnd(); // Called when game win celebration ends
+void onGameWinCelebrationEnd();
 
 void onGoalScored(Team team);
 void celebrateGoal(Team team);
