@@ -9,10 +9,15 @@
 #define IR_DEBOUNCE_TIME 500       // Debounce time in milliseconds
 #define IR_BLOCKED_THRESHOLD 10    // Number of consecutive readings to confirm goal
 
-enum GoalState {
-  NO_GOAL,
-  GOAL_TEAM_A,
-  GOAL_TEAM_B
+// Game configuration
+#define POINTS_TO_WIN 10           // Points needed to win a game
+
+// Game states
+enum GameState {
+  GAME_ACTIVE,
+  GAME_WON_TEAM_A,
+  GAME_WON_TEAM_B,
+  GAME_CELEBRATION
 };
 
 enum Team {
@@ -32,16 +37,29 @@ GoalEvent checkForGoal();
 bool isGoalDetected(int sensorPin);
 void resetGoalDetection();
 
+// Game management functions
+void startNewGame();
+void checkGameEnd();
+bool isGameActive();
+GameState getGameState();
+void onGameWon(Team winningTeam);
+void celebrateGameWin(Team winningTeam);
+void onGameWinCelebrationEnd(); // Called when game win celebration ends
+
 void onGoalScored(Team team);
 void celebrateGoal(Team team);
 
 bool readIRSensor(int pin);
 void printGoalEvent(GoalEvent event);
 
+// Score and game state variables
 extern int scoreTeamA;
 extern int scoreTeamB;
+extern GameState currentGameState;
+
 void incrementScore(Team team);
 void resetScore();
 void printScore();
+void printGameStatus();
 
 #endif // IR_CONTROLLER_H

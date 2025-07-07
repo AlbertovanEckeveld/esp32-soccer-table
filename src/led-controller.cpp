@@ -1,4 +1,5 @@
 #include "led-controller.h"
+#include "ir-controller.h" // Include IR controller for game management
 
 #define WAVE_SPEED 50        
 #define WAVE_WIDTH 20     
@@ -40,15 +41,34 @@ void initLEDs() {
 void updateLEDs() {
   unsigned long currentTime = millis();
   
+  // Determine celebration duration based on effect type
+  unsigned long celebrationDuration;
+  unsigned long celebrationSpeed;
+  
+  if (currentEffect == LED_GOAL_CELEBRATION_A || currentEffect == LED_GOAL_CELEBRATION_B) {
+    celebrationDuration = GOAL_CELEBRATION_DURATION;
+    celebrationSpeed = CELEBRATION_WAVE_SPEED;
+  } else if (currentEffect == LED_GAME_WIN_CELEBRATION_A || currentEffect == LED_GAME_WIN_CELEBRATION_B) {
+    celebrationDuration = GAME_WIN_CELEBRATION_DURATION;
+    celebrationSpeed = GAME_WIN_WAVE_SPEED;
+  } else {
+    celebrationDuration = GOAL_CELEBRATION_DURATION; // Default
+    celebrationSpeed = CELEBRATION_WAVE_SPEED;
+  }
+  
   // Check if celebration should end
-  if (celebrationActive && currentTime - celebrationStartTime > CELEBRATION_DURATION) {
+  if (celebrationActive && currentTime - celebrationStartTime > celebrationDuration) {
     endCelebration();
   }
   
   // Handle celebration effects with higher priority
   if (celebrationActive) {
-    if (currentTime - lastUpdate >= CELEBRATION_WAVE_SPEED) {
-      showGoalCelebration();
+    if (currentTime - lastUpdate >= celebrationSpeed) {
+      if (currentEffect == LED_GOAL_CELEBRATION_A || currentEffect == LED_GOAL_CELEBRATION_B) {
+        showGoalCelebration();
+      } else if (currentEffect == LED_GAME_WIN_CELEBRATION_A || currentEffect == LED_GAME_WIN_CELEBRATION_B) {
+        showGameWinCelebration();
+      }
       lastUpdate = currentTime;
     }
     return; // Skip normal effects during celebration
@@ -87,6 +107,8 @@ void updateLEDs() {
       
     case LED_GOAL_CELEBRATION_A:
     case LED_GOAL_CELEBRATION_B:
+    case LED_GAME_WIN_CELEBRATION_A:
+    case LED_GAME_WIN_CELEBRATION_B:
       // These are handled above in celebration logic
       break;
   }
@@ -126,6 +148,12 @@ void setLEDEffect(LEDEffect effect) {
         break;
       case LED_GOAL_CELEBRATION_B:
         Serial.println("GOAL CELEBRATION TEAM B");
+        break;
+      case LED_GAME_WIN_CELEBRATION_A:
+        Serial.println("GAME WIN CELEBRATION TEAM A");
+        break;
+      case LED_GAME_WIN_CELEBRATION_B:
+        Serial.println("GAME WIN CELEBRATION TEAM B");
         break;
     }
   }
@@ -363,6 +391,83 @@ void showGoalCelebration() {
   FastLED.show();
 }
 
+void triggerGameWinCelebration(int team) {
+  if (celebrationActive) return; // Don't interrupt ongoing celebration
+  
+  Serial.print("🏆 Starting GAME WIN celebration for Team ");
+  Serial.println((team == 1) ? "A (YELLOW)" : "B (ORANGE)");
+  
+  celebrationActive = true;
+  celebrationStartTime = millis();
+  previousEffect = currentEffect; // Store current effect to restore later
+  
+  if (team == 1) {
+    celebrationEffect = LED_GAME_WIN_CELEBRATION_A;
+    celebrationColor = TEAM_A_COLOR;
+    currentEffect = LED_GAME_WIN_CELEBRATION_A;
+  } else {
+    celebrationEffect = LED_GAME_WIN_CELEBRATION_B;
+    celebrationColor = TEAM_B_COLOR;
+    currentEffect = LED_GAME_WIN_CELEBRATION_B;
+  }
+  
+  wavePosition = 0; // Reset wave position for celebration
+  FastLED.setBrightness(255); // Full brightness for celebration
+}
+
+void showGameWinCelebration() {
+  // Create super intense team-colored celebration effect
+  FastLED.clear();
+  
+  // Multiple faster waves for game win effect
+  for (int waveOffset = 0; waveOffset < 5; waveOffset++) {
+    int currentWavePos = (wavePosition + waveOffset * 40) % 300;
+    
+    for (int section = 0; section < 4; section++) {
+      int sectionStart = sectionStarts[section];
+      int sectionEnd = sectionEnds[section];
+      int sectionLength = sectionLengths[section];
+      
+      // Map wave position to section
+      int localWavePos = (currentWavePos + section * 25) % (sectionLength + WAVE_WIDTH);
+      
+      for (int i = sectionStart; i <= sectionEnd; i++) {
+        int localIndex = i - sectionStart;
+        uint8_t intensity = getWaveIntensity(localIndex, localWavePos, WAVE_WIDTH);
+        
+        if (intensity > 0) {
+          // Blend with existing color for multiple wave effect
+          CRGB newColor = celebrationColor;
+          newColor.fadeToBlackBy(255 - intensity);
+          
+          // Add pulsing effect for game win
+          uint8_t pulse = sin8(millis() / 50 + i * 10);
+          newColor.fadeToBlackBy(255 - pulse);
+          
+          if (leds[i]) {
+            leds[i] = blendColors(leds[i], newColor, 100);
+          } else {
+            leds[i] = newColor;
+          }
+        }
+      }
+    }
+  }
+  
+  // More intense sparkle effect for game win
+  for (int sparkles = 0; sparkles < 5; sparkles++) {
+    if (random(100) < 60) { // 60% chance per sparkle
+      int sparklePos = random(NUM_LEDS);
+      if (sparklePos <= SECTION_4_END) { // Only in used sections
+        leds[sparklePos] = CRGB::White;
+      }
+    }
+  }
+  
+  wavePosition += 5; // Much faster wave for game win
+  FastLED.show();
+}
+
 bool isCelebrationActive() {
   return celebrationActive;
 }
@@ -370,10 +475,19 @@ bool isCelebrationActive() {
 void endCelebration() {
   if (!celebrationActive) return;
   
-  Serial.println("🏁 Goal celebration ended");
+  // Check if this was a game win celebration
+  bool wasGameWinCelebration = (currentEffect == LED_GAME_WIN_CELEBRATION_A || 
+                               currentEffect == LED_GAME_WIN_CELEBRATION_B);
+  
+  Serial.println("🏁 Celebration ended");
   celebrationActive = false;
   
   // Restore previous effect and brightness
   FastLED.setBrightness(BRIGHTNESS);
   setLEDEffect(previousEffect);
+  
+  // If it was a game win celebration, start a new game
+  if (wasGameWinCelebration) {
+    onGameWinCelebrationEnd();
+  }
 }

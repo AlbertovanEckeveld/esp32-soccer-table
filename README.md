@@ -5,16 +5,22 @@ A smart soccer table (foosball) controller built with ESP32 that features automa
 ## 🏆 Features
 
 - **Automatic Goal Detection**: IR sensors in each goal detect when a ball passes through
+- **10-Point Game System**: Complete games with automatic win detection at 10 points
 - **LED Strip Celebrations**: 5-meter WS2812B LED strip displays team-specific color waves when goals are scored
+- **Game Win Celebrations**: Extended 10-second celebrations when a team wins the game
+- **Score Tracking**: Automatic score counting for both teams with game status
 - **Non-blocking Architecture**: All systems run simultaneously without delays
 - **Team Colors**: Team A (Yellow) vs Team B (Orange) celebrations
 
 ## ⚽ How It Works
 
-1. **Normal Mode**: LED strip cycles through beautiful demo effects (white, color waves, rainbow, breathing)
-2. **Goal Detection**: IR sensors detect when the ball blocks the beam in either goal
-3. **Celebration**: Immediate 3-second team-colored LED celebration wave
-4. **Return to Normal**: Demo effects resume after celebration
+1. **Game Start**: System initializes a new 10-point game automatically
+2. **Normal Mode**: LED strip cycles through beautiful demo effects (white, color waves, rainbow, breathing) during active gameplay
+3. **Goal Detection**: IR sensors detect when the ball blocks the beam in either goal
+4. **Goal Celebration**: Immediate 3-second team-colored LED celebration wave
+5. **Score Tracking**: Score increments automatically, displayed in Serial Monitor
+6. **Game End**: When a team reaches 10 points, a 10-second game win celebration triggers
+7. **Auto Restart**: After game win celebration, a new 10-point game starts automatically
 
 ## 🔧 Hardware Requirements
 
@@ -90,12 +96,16 @@ If using different pins, update the pin definitions in the header files:
 3. Demo effects cycle every 10 seconds when not playing
 
 ### Playing Soccer
-1. Start playing - the system is always ready
+1. Start playing - the system is always ready for a 10-point game
 2. When a goal is scored, the IR sensor detects it immediately
 3. LED strip shows a 3-second celebration in team colors:
-   - **Team A Goal**: Red wave celebration
-   - **Team B Goal**: Blue wave celebration
-4. After celebration, demo effects resume
+   - **Team A Goal**: Yellow wave celebration
+   - **Team B Goal**: Orange wave celebration
+4. Score is automatically tracked and displayed in Serial Monitor
+5. **Game Win**: When a team reaches 10 points:
+   - 10-second extended game win celebration in team colors
+   - Game automatically restarts after celebration
+6. After goal celebrations, demo effects resume (only during active games)
 
 ### Serial Monitor Output
 ```
@@ -105,12 +115,32 @@ LED strip initialized with 300 LEDs
 IR sensors initialized:
 - Goal 1 (Team A) sensor on pin 18
 - Goal 2 (Team B) sensor on pin 19
-⚽ Soccer table system initialized successfully! ⚽
+⚽ Soccer table ready for 10-point games! ⚽
+
+🏁 Starting new game! First to 10 points wins! 🏁
+📊 Game Status:
+🎯 Target: 10 points to win
+Current Score - Team A: 0 | Team B: 0
+⚽ Game is ACTIVE - Play on!
 
 🥅 GOAL SCORED! 🥅
-Team A scored!
+Team A (YELLOW) scored!
 Current Score - Team A: 1 | Team B: 0
-🎉 Starting goal celebration for Team A (RED)
+🎉 Starting goal celebration for Team A (YELLOW)
+
+🏆🏆🏆 GAME WON! 🏆🏆🏆
+Team A (YELLOW) wins the game!
+Current Score - Team A: 10 | Team B: 7
+🎆 Celebrating GAME WIN for Team A
+New game will start automatically after celebration!
+
+🏁 Celebration ended
+🏁 Game win celebration ended - Starting new game!
+🏁 Starting new game! First to 10 points wins! 🏁
+📊 Game Status:
+🎯 Target: 10 points to win
+Current Score - Team A: 0 | Team B: 0
+⚽ Game is ACTIVE - Play on!
 ```
 
 ## ⚙️ Configuration Options
@@ -125,9 +155,11 @@ You can modify the available effects in `led-controller.h`:
 ### Timing Settings
 Adjust timing in the header files:
 ```cpp
-#define CELEBRATION_DURATION 5000    // Goal celebration length (ms)
-#define IR_DEBOUNCE_TIME 500         // Goal detection debounce (ms)
-#define WAVE_SPEED 50                // Wave animation speed
+#define POINTS_TO_WIN 10                     // Points needed to win (easily configurable)
+#define GOAL_CELEBRATION_DURATION 3000       // Goal celebration length (ms) 
+#define GAME_WIN_CELEBRATION_DURATION 10000  // Game win celebration length (ms)
+#define IR_DEBOUNCE_TIME 500                 // Goal detection debounce (ms)
+#define WAVE_SPEED 50                        // Wave animation speed
 ```
 
 ### Team Colors

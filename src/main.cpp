@@ -13,36 +13,44 @@ void setup() {
   
   initIRSensors();
   
-  // Start with full white effect
-  setLEDEffect(LED_FULL_WHITE);
+  // Start with LEDs off (will turn white automatically when game becomes active)
+  setLEDEffect(LED_OFF);
   
   Serial.println("⚽ Soccer table system initialized successfully! ⚽");
   Serial.println("Ready for play! Score goals to see LED celebrations!");
 }
 
 void loop() {
-
+  // Non-blocking LED animations
   updateLEDs();
   
-  // Check for goals (IR sensors)
+  // Check for goals (IR sensors) - only during active games
   updateIRSensors();
   
-  // Only cycle through demo effects when not celebrating a goal
+  // LED control based on game state
   if (!isCelebrationActive()) {
-    static unsigned long lastEffectChange = 0;
-    static int currentEffectIndex = 1; // Start with full white
-    
-    if (millis() - lastEffectChange > 10000) {
-      LEDEffect effects[] = {LED_FULL_WHITE, LED_COLOR_WAVE, LED_RAINBOW_WAVE, LED_BREATHING};
-      
-      setLEDEffect(effects[currentEffectIndex]);
-      
-      if (currentEffectIndex == 1) { // Color wave
-        setWaveColor(CRGB::Blue); // Set wave color to blue
+    if (isGameActive()) {
+      // Game is active - show static white light
+      static bool gameActiveEffectSet = false;
+      if (!gameActiveEffectSet) {
+        setLEDEffect(LED_FULL_WHITE);
+        gameActiveEffectSet = true;
       }
-      
-      currentEffectIndex = (currentEffectIndex + 1) % 4;
-      lastEffectChange = millis();
+    } else {
+      // No game active - turn LEDs off
+      static bool gameInactiveEffectSet = false;
+      if (!gameInactiveEffectSet) {
+        setLEDEffect(LED_OFF);
+        gameInactiveEffectSet = true;
+      }
+    }
+    
+    // Reset flags when game state changes
+    static bool lastGameState = isGameActive();
+    if (lastGameState != isGameActive()) {
+      static bool gameActiveEffectSet = false;
+      static bool gameInactiveEffectSet = false;
+      lastGameState = isGameActive();
     }
   }
   

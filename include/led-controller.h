@@ -21,13 +21,15 @@
 #define UNUSED_START 228     // Remaining LEDs (228-299)
 #define UNUSED_END 299
 
-// Goal celebration settings
-#define CELEBRATION_DURATION 5000    // 5 seconds celebration
-#define CELEBRATION_WAVE_SPEED 30    // Faster wave for celebration
+// Celebration settings
+#define GOAL_CELEBRATION_DURATION 3000    // 3 seconds for goal celebration
+#define GAME_WIN_CELEBRATION_DURATION 10000  // 10 seconds for game win celebration
+#define CELEBRATION_WAVE_SPEED 30          // Faster wave for celebration
+#define GAME_WIN_WAVE_SPEED 20             // Even faster for game win
 
 // Team colors
-#define TEAM_A_COLOR CRGB::Yellow       // Team A = Red
-#define TEAM_B_COLOR CRGB::Orange      // Team B = Blue
+#define TEAM_A_COLOR CRGB::Yellow       // Team A = Yellow
+#define TEAM_B_COLOR CRGB::Orange       // Team B = Orange
 
 enum LEDEffect {
   LED_OFF,
@@ -35,8 +37,10 @@ enum LEDEffect {
   LED_COLOR_WAVE,
   LED_RAINBOW_WAVE,
   LED_BREATHING,
-  LED_GOAL_CELEBRATION_A,            
-  LED_GOAL_CELEBRATION_B             
+  LED_GOAL_CELEBRATION_A,            // Goal celebration for Team A
+  LED_GOAL_CELEBRATION_B,            // Goal celebration for Team B
+  LED_GAME_WIN_CELEBRATION_A,        // Game win celebration for Team A
+  LED_GAME_WIN_CELEBRATION_B         // Game win celebration for Team B
 };
 
 void initLEDs();
@@ -46,7 +50,9 @@ void setWaveColor(CRGB color);
 void setBrightness(uint8_t brightness);
 
 void triggerGoalCelebration(int team); // team: 1 = Team A, 2 = Team B
+void triggerGameWinCelebration(int team); // team: 1 = Team A, 2 = Team B
 void showGoalCelebration();
+void showGameWinCelebration();
 bool isCelebrationActive();
 void endCelebration();
 

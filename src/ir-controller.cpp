@@ -1,8 +1,10 @@
 #include "ir-controller.h"
 #include "led-controller.h" 
 
+// Score and game state variables
 int scoreTeamA = 0;
 int scoreTeamB = 0;
+GameState currentGameState = GAME_ACTIVE;
 
 unsigned long lastGoalTime = 0;
 unsigned long lastSensorCheck = 0;
@@ -20,15 +22,15 @@ void initIRSensors() {
   pinMode(IR_SENSOR_GOAL_1_PIN, INPUT_PULLUP);
   pinMode(IR_SENSOR_GOAL_2_PIN, INPUT_PULLUP);
   
-  resetScore();
-  resetGoalDetection();
+  startNewGame(); // Initialize new game
   
   Serial.println("IR sensors initialized:");
   Serial.print("- Goal 1 (Team A) sensor on pin ");
   Serial.println(IR_SENSOR_GOAL_1_PIN);
   Serial.print("- Goal 2 (Team B) sensor on pin ");
   Serial.println(IR_SENSOR_GOAL_2_PIN);
-  Serial.println("Soccer table ready for play!");
+  Serial.println("⚽ Soccer table ready for 10-point games! ⚽");
+  printGameStatus();
 }
 
 void updateIRSensors() {
@@ -127,19 +129,28 @@ void resetGoalDetection() {
 }
 
 void onGoalScored(Team team) {
+  // Only count goals during active game
+  if (!isGameActive()) {
+    Serial.println("⚠️ Goal detected but game is not active!");
+    return;
+  }
+  
   Serial.println("🥅 GOAL SCORED! 🥅");
   
-  // Increment score
+  // Increment score (this will also check for game end)
   incrementScore(team);
   
   // Print goal information
   Serial.print("Team ");
-  Serial.print((team == TEAM_A) ? "A" : "B");
+  Serial.print((team == TEAM_A) ? "A (YELLOW)" : "B (ORANGE)");
   Serial.println(" scored!");
   printScore();
   
-  // Trigger LED celebration
-  celebrateGoal(team);
+  // Only trigger goal celebration if game is still active
+  // (if game ended, the game win celebration will be triggered instead)
+  if (isGameActive()) {
+    celebrateGoal(team);
+  }
 }
 
 void celebrateGoal(Team team) {
@@ -170,6 +181,9 @@ void incrementScore(Team team) {
   } else if (team == TEAM_B) {
     scoreTeamB++;
   }
+  
+  // Check if game is won after scoring
+  checkGameEnd();
 }
 
 void resetScore() {
@@ -183,4 +197,92 @@ void printScore() {
   Serial.print(scoreTeamA);
   Serial.print(" | Team B: ");
   Serial.println(scoreTeamB);
+}
+
+// ===========================================
+// GAME MANAGEMENT FUNCTIONS
+// ===========================================
+
+void startNewGame() {
+  Serial.println("🏁 Starting new game! First to 10 points wins! 🏁");
+  resetScore();
+  resetGoalDetection();
+  currentGameState = GAME_ACTIVE;
+  printGameStatus();
+}
+
+void checkGameEnd() {
+  if (currentGameState != GAME_ACTIVE) {
+    return; // Game already ended
+  }
+  
+  if (scoreTeamA >= POINTS_TO_WIN) {
+    currentGameState = GAME_WON_TEAM_A;
+    onGameWon(TEAM_A);
+  } else if (scoreTeamB >= POINTS_TO_WIN) {
+    currentGameState = GAME_WON_TEAM_B;
+    onGameWon(TEAM_B);
+  }
+}
+
+bool isGameActive() {
+  return currentGameState == GAME_ACTIVE;
+}
+
+GameState getGameState() {
+  return currentGameState;
+}
+
+void onGameWon(Team winningTeam) {
+  Serial.println();
+  Serial.println("🏆🏆🏆 GAME WON! 🏆🏆🏆");
+  Serial.print("Team ");
+  Serial.print((winningTeam == TEAM_A) ? "A (YELLOW)" : "B (ORANGE)");
+  Serial.println(" wins the game!");
+  printScore();
+  Serial.println("🎉 Game celebration starting! 🎉");
+  
+  // Trigger game win celebration
+  celebrateGameWin(winningTeam);
+  
+  // Note: New game will start automatically after celebration ends
+  Serial.println("New game will start automatically after celebration!");
+}
+
+void celebrateGameWin(Team winningTeam) {
+  // Trigger extended LED celebration for game win
+  Serial.print("🎆 Celebrating GAME WIN for Team ");
+  Serial.println((winningTeam == TEAM_A) ? "A" : "B");
+  
+  // Trigger game win celebration (1 = Team A, 2 = Team B)
+  triggerGameWinCelebration((winningTeam == TEAM_A) ? 1 : 2);
+}
+
+void onGameWinCelebrationEnd() {
+  Serial.println("🏁 Game win celebration ended - Starting new game!");
+  startNewGame();
+}
+
+void printGameStatus() {
+  Serial.println("📊 Game Status:");
+  Serial.print("🎯 Target: ");
+  Serial.print(POINTS_TO_WIN);
+  Serial.println(" points to win");
+  printScore();
+  
+  switch (currentGameState) {
+    case GAME_ACTIVE:
+      Serial.println("⚽ Game is ACTIVE - Play on!");
+      break;
+    case GAME_WON_TEAM_A:
+      Serial.println("🏆 Team A has WON the game!");
+      break;
+    case GAME_WON_TEAM_B:
+      Serial.println("🏆 Team B has WON the game!");
+      break;
+    case GAME_CELEBRATION:
+      Serial.println("🎉 Game celebration in progress...");
+      break;
+  }
+  Serial.println("-------------------");
 }
